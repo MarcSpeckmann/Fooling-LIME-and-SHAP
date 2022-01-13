@@ -32,7 +32,7 @@ class Dataset:
         impute_strategy
         """
 
-        self._data = pd.read_csv(os.path.join("datasets", 'HousingData' + ".csv"))
+        self._data = pd.read_csv(os.path.join("datasets", dataset_name + ".csv"))
 
         self.biased_id = biased_ids
         if categorical_ids:

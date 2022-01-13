@@ -156,3 +156,5 @@ dmypy.json
 .idea/**/sqlDataSources.xml
 .idea/**/dynamic.xml
 .idea/**/uiDe
+
+.idea/*

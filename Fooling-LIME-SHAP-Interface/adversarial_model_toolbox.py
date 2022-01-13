@@ -69,22 +69,20 @@ class AdversarialModelToolbox:
             normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
                                                                       feature_names=self.adversarial_model.get_column_names(),
                                                                       discretize_continuous=False,
-                                                                      categorical_features=self.data.get_input_categorical_feature_indices(),
-                                                                      mode='regression')
+                                                                      categorical_features=self.data.get_input_categorical_feature_indices())
 
             normal_exp = normal_explainer.explain_instance(self.X_test[ex_indc],
-                                                           self.biased_model.predict).as_list()
+                                                           self.biased_model.predict_proba).as_list()
 
             print("Explanation on biased f:\n", normal_exp[:3], "\n\n")
 
             adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
                                                                    feature_names=self.adversarial_model.get_column_names(),
                                                                    discretize_continuous=False,
-                                                                   categorical_features=self.data.get_input_categorical_feature_indices(),
-                                                                   mode='regression')
+                                                                   categorical_features=self.data.get_input_categorical_feature_indices())
 
             adv_exp = adv_explainer.explain_instance(self.X_test[ex_indc],
-                                                     self.adversarial_model.predict).as_list()
+                                                     self.adversarial_model.predict_proba).as_list()
 
             print("Explanation on adversarial model:\n", adv_exp[:3], "\n")
 
