@@ -6,6 +6,7 @@ import shap
 from adversarial_model import Adversarial_Lime_Model, Adversarial_Kernel_SHAP_Model
 from dataset import Dataset
 from util.explainer_type import ExplainerType
+from util.ml_type import MLType
 
 
 class AdversarialModelToolbox:
@@ -14,7 +15,8 @@ class AdversarialModelToolbox:
     """
 
     def __init__(self, biased_model, data: Dataset, unbiased_model=None,
-                 fool_explainer_type: ExplainerType = ExplainerType.LIME, train_test_split: float = 0.6, seed: int = 0):
+                 fool_explainer_type: ExplainerType = ExplainerType.LIME, ml_type: MLType = MLType.CLASSIFICATION,
+                 train_test_split: float = 0.6, seed: int = 0):
         """
         TODO:
         Parameters
@@ -28,8 +30,10 @@ class AdversarialModelToolbox:
         self.data = data
         self.biased_model = biased_model
         self.unbiased_model = unbiased_model
+        self.ml_type = ml_type
 
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.data.get_data(split=train_test_split, random_state=seed)
+        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.data.get_data(split=train_test_split,
+                                                                                      random_state=seed)
 
         if fool_explainer_type == ExplainerType.LIME:
             self.adversarial_model = Adversarial_Lime_Model(self.biased_model, self.unbiased_model)
@@ -65,30 +69,59 @@ class AdversarialModelToolbox:
         """
         if self.type == ExplainerType.LIME:
             ex_indc = np.random.choice(self.X_test.shape[0])
+            if self.ml_type == MLType.CLASSIFICATION:
+                normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
+                                                                          feature_names=self.adversarial_model.get_column_names(),
+                                                                          discretize_continuous=False,
+                                                                          categorical_features=self.data.get_input_categorical_feature_indices())
 
-            normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
-                                                                      feature_names=self.adversarial_model.get_column_names(),
-                                                                      discretize_continuous=False,
-                                                                      categorical_features=self.data.get_input_categorical_feature_indices())
+                normal_exp = normal_explainer.explain_instance(self.X_test[ex_indc],
+                                                               self.biased_model.predict_proba,
+                                                               num_features=len(self.X_train[1])).as_list()
+            elif self.ml_type == MLType.REGRESSION:
+                normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
+                                                                          feature_names=self.adversarial_model.get_column_names(),
+                                                                          discretize_continuous=False,
+                                                                          categorical_features=self.data.get_input_categorical_feature_indices(),
+                                                                          mode='regression')
 
-            normal_exp = normal_explainer.explain_instance(self.X_test[ex_indc],
-                                                           self.biased_model.predict_proba).as_list()
+                normal_exp = normal_explainer.explain_instance(self.X_test[ex_indc],
+                                                               self.biased_model.predict,
+                                                               num_features=len(self.X_train[1])).as_list()
+            else:
+                raise ValueError()
 
-            print("Explanation on biased f:\n", normal_exp[:3], "\n\n")
+            print("Explanation on biased f:\n", normal_exp, "\n\n")
 
-            adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
-                                                                   feature_names=self.adversarial_model.get_column_names(),
-                                                                   discretize_continuous=False,
-                                                                   categorical_features=self.data.get_input_categorical_feature_indices())
+            if self.ml_type == MLType.CLASSIFICATION:
 
-            adv_exp = adv_explainer.explain_instance(self.X_test[ex_indc],
-                                                     self.adversarial_model.predict_proba).as_list()
+                adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
+                                                                       feature_names=self.adversarial_model.get_column_names(),
+                                                                       discretize_continuous=False,
+                                                                       categorical_features=self.data.get_input_categorical_feature_indices())
 
-            print("Explanation on adversarial model:\n", adv_exp[:3], "\n")
+                adv_exp = adv_explainer.explain_instance(self.X_test[ex_indc],
+                                                         self.adversarial_model.predict_proba,
+                                                         num_features=len(self.X_train[1])).as_list()
+            elif self.ml_type == MLType.REGRESSION:
+                adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
+                                                                       feature_names=self.adversarial_model.get_column_names(),
+                                                                       discretize_continuous=False,
+                                                                       categorical_features=self.data.get_input_categorical_feature_indices(),
+                                                                       mode='regression')
+
+                adv_exp = adv_explainer.explain_instance(self.X_test[ex_indc],
+                                                         self.adversarial_model.predict,
+                                                         num_features=len(self.X_train[1])).as_list()
+            else:
+                raise ValueError()
+
+            print("Explanation on adversarial model:\n", adv_exp, "\n")
 
             print("Prediction fidelity: {0:3.2}".format(
                 self.adversarial_model.fidelity(self.X_test[ex_indc:ex_indc + 1])))
         elif self.type == ExplainerType.SHAP:
+            # TODO: check for different ml types
             background_distribution = shap.kmeans(self.X_train, 10)
 
             to_examine = np.random.choice(self.X_test.shape[0])

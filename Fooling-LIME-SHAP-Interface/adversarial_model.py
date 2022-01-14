@@ -89,12 +89,11 @@ class Adversarial_Model(object):
         pred_probs = self.perturbation_identifier.predict_proba(X)
         perturbation_preds = (pred_probs[:, 1] >= threshold)
 
-        sol = np.where(np.array([perturbation_preds == 1, perturbation_preds == 1]).transpose(), predictions_to_obscure,
-                       predictions_to_explain_by)
+        sol = np.where(np.stack([perturbation_preds for _ in range(predictions_to_obscure.shape[1])]).transpose(), predictions_to_obscure, predictions_to_explain_by)
 
         return sol
 
-    def predict(self, X):
+    def predict(self, X, threshold=0.5):
         """	Scikit-learn style prediction. Follows from predict_proba.
 
         Parameters
@@ -105,8 +104,28 @@ class Adversarial_Model(object):
         ----------
         A numpy array containing the binary class predictions.
         """
-        pred_probs = self.predict_proba(X)
-        return np.argmax(pred_probs, axis=1)
+        if self.perturbation_identifier is None:
+            raise NameError("Model is not trained yet, can't perform predictions.")
+
+        # generate the "true" predictions on the data using the "bad" model -- this is f in the paper
+        predictions_to_obscure = self.f_obscure.predict(X)
+
+        # generate the "explain" predictions -- this is psi in the paper
+
+        predictions_to_explain_by = self.psi_display.predict(X)
+
+        # in the case that we're only considering numerical columns
+        if self.numerical_cols:
+            X = X[:, self.numerical_cols]
+
+        # allow thresholding for finetuned control over psi_display and f_obscure
+        pred_probs = self.perturbation_identifier.predict_proba(X)
+        perturbation_preds = (pred_probs[:, 1] >= threshold)
+
+        sol = np.where(perturbation_preds.transpose(), predictions_to_obscure, predictions_to_explain_by)
+
+        return sol
+
 
     def score(self, X_test, y_test):
         """ Scikit-learn style accuracy scoring.

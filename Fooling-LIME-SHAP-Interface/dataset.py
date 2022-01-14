@@ -34,7 +34,9 @@ class Dataset:
 
         self._data = pd.read_csv(os.path.join("datasets", dataset_name + ".csv"))
 
-        self.biased_id = biased_ids
+        self.biased_ids = []
+        for x in biased_ids:
+            self.biased_ids.append(input_ids.index(x))
         if categorical_ids:
             for categorical_id in categorical_ids:
                 self._data[self._data.columns[categorical_id]] = pd.Categorical(
@@ -96,7 +98,7 @@ class Dataset:
         """
         X, y = shuffle(self.X, self.y, random_state=random_state)
         if biased == False:
-            X[:, self.biased_id] = 0
+            X[:, self.biased_ids] = 0
 
         split_idx = int(len(X) * split)
 
