@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
 
@@ -37,10 +38,15 @@ class Dataset:
         self.biased_ids = []
         for x in biased_ids:
             self.biased_ids.append(input_ids.index(x))
+
+        self.label_encoder = []
         if categorical_ids:
             for categorical_id in categorical_ids:
-                self._data[self._data.columns[categorical_id]] = pd.Categorical(
-                    self._data[self._data.columns[categorical_id]])
+                self._data[self._data.columns[categorical_id]] = pd.Categorical(self._data[self._data.columns[categorical_id]])
+                le = preprocessing.LabelEncoder()
+                self._data[self._data.columns[categorical_id]] = le.fit_transform(self._data[self._data.columns[categorical_id]])
+                self.label_encoder.append(le)
+
 
         self.dataset_name = dataset_name
         self.input_ids = input_ids
