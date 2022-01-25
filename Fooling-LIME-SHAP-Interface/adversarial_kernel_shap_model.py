@@ -34,10 +34,10 @@ import shap
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-from adversarial_model import Adversarial_Model
+from adversarial_model import AdversarialModel
 
 
-class Adversarial_Kernel_SHAP_Model(Adversarial_Model):
+class AdversarialKernelSHAPModel(AdversarialModel):
     """ SHAP adversarial model.  Generates an adversarial model for SHAP style perturbations.
 
     Parameters:
@@ -47,7 +47,7 @@ class Adversarial_Kernel_SHAP_Model(Adversarial_Model):
     """
 
     def __init__(self, f_obscure, psi_display):
-        super(Adversarial_Kernel_SHAP_Model, self).__init__(f_obscure, psi_display)
+        super(AdversarialKernelSHAPModel, self).__init__(f_obscure, psi_display)
 
     def train(self, X, y, feature_names, background_distribution=None, perturbation_multiplier=10, n_samples=2e4,
               rf_estimators=100, n_kmeans=10, estimator=None):

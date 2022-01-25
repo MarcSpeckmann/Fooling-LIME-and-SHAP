@@ -7,9 +7,9 @@ import shap
 from pdpbox import pdp, info_plots
 from sklearn.inspection import PartialDependenceDisplay
 
-from adversarial_kernel_shap_model import Adversarial_Kernel_SHAP_Model
+from adversarial_kernel_shap_model import AdversarialKernelSHAPModel
 from adversarial_pdp_model import AdversarialPDPModel
-from adversarial_lime_model import Adversarial_Lime_Model
+from adversarial_lime_model import AdversarialLimeModel
 from dataset import Dataset
 from util.explainer_type import ExplainerType
 from util.ml_type import MLType
@@ -41,9 +41,9 @@ class AdversarialModelToolbox:
         (self.X_train, self.y_train), (self.X_test, self.y_test) = self.data.get_data()
 
         if fool_explainer_type == ExplainerType.LIME :
-            self.adversarial_model = Adversarial_Lime_Model(self.biased_model, self.unbiased_model)
+            self.adversarial_model = AdversarialLimeModel(self.biased_model, self.unbiased_model)
         elif fool_explainer_type == ExplainerType.SHAP:
-            self.adversarial_model = Adversarial_Kernel_SHAP_Model(self.biased_model, self.unbiased_model)
+            self.adversarial_model = AdversarialKernelSHAPModel(self.biased_model, self.unbiased_model)
         elif fool_explainer_type == ExplainerType.PDP:
             self.adversarial_model = AdversarialPDPModel(self.biased_model, self.unbiased_model)
         else:

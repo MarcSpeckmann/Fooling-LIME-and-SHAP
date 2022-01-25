@@ -3,10 +3,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-from adversarial_model import Adversarial_Model
+from adversarial_model import AdversarialModel
 
 
-class AdversarialPDPModel(Adversarial_Model):
+class AdversarialPDPModel(AdversarialModel):
     """ PDP adversarial model.  Generates an adversarial model for PDP style perturbations.
 
     Parameters:

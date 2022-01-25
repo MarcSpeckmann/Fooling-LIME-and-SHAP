@@ -31,10 +31,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-from adversarial_model import Adversarial_Model
+from adversarial_model import AdversarialModel
 
 
-class Adversarial_Lime_Model(Adversarial_Model):
+class AdversarialLimeModel(AdversarialModel):
     """ Lime adversarial model.  Generates an adversarial model for LIME style explainers using the Adversarial Model
     base class.
 
@@ -46,7 +46,7 @@ class Adversarial_Lime_Model(Adversarial_Model):
     """
 
     def __init__(self, f_obscure, psi_display, perturbation_std=0.3):
-        super(Adversarial_Lime_Model, self).__init__(f_obscure, psi_display)
+        super(AdversarialLimeModel, self).__init__(f_obscure, psi_display)
         self.perturbation_std = perturbation_std
 
     def train(self, X, y, feature_names, perturbation_multiplier=30, categorical_features=[], rf_estimators=100,

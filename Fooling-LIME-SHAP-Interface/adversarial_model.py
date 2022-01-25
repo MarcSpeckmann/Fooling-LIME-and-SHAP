@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 
 
-class Adversarial_Model(object):
+class AdversarialModel(object):
     """	A scikit-learn style adversarial explainer base class for adversarial models.  This accetps
     a scikit learn style function f_obscure that serves as the _true classification rule_ for in distribution
     data.  Also, it accepts, psi_display: the classification rule you wish to display by explainers (e.g. LIME/SHAP).
@@ -89,6 +89,7 @@ class Adversarial_Model(object):
 
         Parameters
         ----------
+        threshold
         X : np.ndarray
 
         Returns
