@@ -1,9 +1,15 @@
 import lime
 import lime.lime_tabular
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import shap
+from pdpbox import pdp, info_plots
+from sklearn.inspection import PartialDependenceDisplay
 
-from adversarial_model import Adversarial_Lime_Model, Adversarial_Kernel_SHAP_Model
+from adversarial_kernel_shap_model import Adversarial_Kernel_SHAP_Model
+from adversarial_pdp_model import AdversarialPDPModel
+from adversarial_lime_model import Adversarial_Lime_Model
 from dataset import Dataset
 from util.explainer_type import ExplainerType
 from util.ml_type import MLType
@@ -16,7 +22,7 @@ class AdversarialModelToolbox:
 
     def __init__(self, biased_model, data: Dataset, unbiased_model=None,
                  fool_explainer_type: ExplainerType = ExplainerType.LIME, ml_type: MLType = MLType.CLASSIFICATION,
-                 train_test_split: float = 0.6, seed: int = 0):
+                 seed: int = 0):
         """
         TODO:
         Parameters
@@ -32,13 +38,14 @@ class AdversarialModelToolbox:
         self.unbiased_model = unbiased_model
         self.ml_type = ml_type
 
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.data.get_data(split=train_test_split,
-                                                                                      random_state=seed)
+        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.data.get_data()
 
-        if fool_explainer_type == ExplainerType.LIME:
+        if fool_explainer_type == ExplainerType.LIME :
             self.adversarial_model = Adversarial_Lime_Model(self.biased_model, self.unbiased_model)
         elif fool_explainer_type == ExplainerType.SHAP:
             self.adversarial_model = Adversarial_Kernel_SHAP_Model(self.biased_model, self.unbiased_model)
+        elif fool_explainer_type == ExplainerType.PDP:
+            self.adversarial_model = AdversarialPDPModel(self.biased_model, self.unbiased_model)
         else:
             raise ValueError("Unknown Explainer type to be fouled.")
 
@@ -59,6 +66,10 @@ class AdversarialModelToolbox:
             self.adversarial_model.train(self.X_train, self.y_train, feature_names=self.data.get_input_labels(),
                                          background_distribution=None, perturbation_multiplier=10, n_samples=2e4,
                                          rf_estimators=100, n_kmeans=10, estimator=None)
+        elif self.type == ExplainerType.PDP:
+            self.adversarial_model.train(self.X_train, hide_index=self.data.biased_id, feature_names=self.data.get_input_labels(),
+                                         categorical_features=self.data.get_input_categorical_feature_indices(),
+                                         estimator=None)
 
     def get_explanations(self):
         """
@@ -136,3 +147,26 @@ class AdversarialModelToolbox:
             shap.summary_plot(adv_shap_values, feature_names=self.data.get_input_labels(), plot_type="bar")
 
             print("Fidelity: {0:3.2}".format(self.adversarial_model.fidelity(self.X_test[to_examine:to_examine + 1])))
+
+        elif self.type == ExplainerType.PDP:
+            (X_train, y_train), (X_test, y_test) = self.data.get_data()
+            pdp_df = pd.DataFrame(X_test)
+            pdp_sex = pdp.pdp_isolate(model=self.biased_model,
+                                      dataset=pdp_df,
+                                      model_features=pdp_df.columns.tolist(),
+                                      feature=pdp_df.columns.tolist()[self.data.biased_id],
+                                      num_grid_points=100
+                                      )
+            fig, axes, = pdp.pdp_plot(pdp_isolate_out=pdp_sex, feature_name=self.data.get_biased_label(), plot_lines=True)
+            plt.show()
+
+            pdp_sex = pdp.pdp_isolate(model=self.adversarial_model,
+                                      dataset=pdp_df,
+                                      model_features=pdp_df.columns.tolist(),
+                                      feature=pdp_df.columns.tolist()[self.data.biased_id],
+                                      num_grid_points=100
+                                      )
+            fig, axes, = pdp.pdp_plot(pdp_isolate_out=pdp_sex, feature_name=self.data.get_biased_label(),
+                                      plot_lines=True)
+            plt.show()
+

@@ -17,10 +17,10 @@ class Dataset:
                  dataset_name: str,
                  input_ids: List[int],
                  output_id: int,
-                 biased_ids: List[int],
+                 biased_id: int,
                  categorical_ids: List[int] = None,
                  normalize: bool = False,
-                 impute_strategy: str = "remove"):
+                 split=0.6, random_state=0):
         """
         TODO:
         Parameters
@@ -35,9 +35,8 @@ class Dataset:
 
         self._data = pd.read_csv(os.path.join("datasets", dataset_name + ".csv"))
 
-        self.biased_ids = []
-        for x in biased_ids:
-            self.biased_ids.append(input_ids.index(x))
+        self.biased_raw = biased_id
+        self.biased_id = input_ids.index(biased_id)
 
         self.label_encoder = []
         if categorical_ids:
@@ -57,24 +56,9 @@ class Dataset:
 
         self.output_id = output_id
 
+        self._data = self._data.fillna(0)
+
         X, y = self._data.to_numpy()[:, self.input_ids], self._data.to_numpy()[:, self.output_id].reshape(-1, 1)
-
-        if impute_strategy is not None:
-            # Set NaN values to 0
-            if impute_strategy == "zeros":
-                X[pd.isnull(X)] = 0
-            elif impute_strategy == "remove":
-                # First take care of X
-                mask = np.any(pd.isnull(X), axis=1)
-                X = X[~mask]
-                y = y[~mask]
-
-                # Then take care of y
-                mask = np.any(pd.isnull(y), axis=1)
-                X = X[~mask]
-                y = y[~mask]
-            else:
-                raise NotImplementedError("Impute strategy was not found.")
 
         if normalize:
             scaler = MinMaxScaler()
@@ -86,10 +70,17 @@ class Dataset:
                 scaler.fit(y)
                 y = scaler.transform(y)
 
-        self.X = X
-        self.y = y
+        self.X, self.y = shuffle(X, y, random_state=random_state)
 
-    def get_data(self, biased=True, split=0.6, random_state=0):
+        split_idx = int(len(X) * split)
+
+        self.X_train, self.y_train = X[:split_idx], y[:split_idx]
+        self.X_val, self.y_val = X[split_idx:], y[split_idx:]
+
+        self.y_train = self.y_train.flatten()
+        self.y_val = self.y_val.flatten()
+
+    def get_data(self, biased=True, df=False):
         """
         TODO:
         Parameters
@@ -102,17 +93,22 @@ class Dataset:
         -------
 
         """
-        X, y = shuffle(self.X, self.y, random_state=random_state)
+        if df:
+            X_train = pd.DataFrame(self.X_train)
+            X_train.columns = self._data.columns[self.input_ids]
+            X_val = pd.DataFrame(self.X_val)
+            X_val.columns = self._data.columns[self.input_ids]
+            y_train = pd.DataFrame({self._data.columns[self.output_id]: self.y_train})
+            y_val = pd.DataFrame({self._data.columns[self.output_id]: self.y_val})
+        else:
+            y_train = self.y_train.copy()
+            y_val = self.y_val.copy()
+            X_train = self.X_train.copy()
+            X_val = self.X_val.copy()
+
         if biased == False:
-            X[:, self.biased_ids] = 0
-
-        split_idx = int(len(X) * split)
-
-        X_train, y_train = X[:split_idx], y[:split_idx]
-        X_val, y_val = X[split_idx:], y[split_idx:]
-
-        y_train = y_train.flatten()
-        y_val = y_val.flatten()
+            X_train[:, self.biased_id] = 0
+            X_val[:, self.biased_id] = 0
 
         return (X_train, y_train), (X_val, y_val)
 
@@ -155,3 +151,6 @@ class Dataset:
                 if input_idx in self.categorical_ids:
                     idxs.append(i)
         return idxs
+
+    def get_biased_label(self):
+        return self._data.columns.tolist()[self.biased_raw]
