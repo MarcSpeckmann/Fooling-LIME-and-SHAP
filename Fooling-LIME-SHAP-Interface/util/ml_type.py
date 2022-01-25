@@ -6,4 +6,5 @@ class MLType(Enum):
     TODO:
     """
     REGRESSION = 0
-    CLASSIFICATION = 1
+    CLASSIFICATION_BINARY = 1
+    CLASSIFICATION_MULTI = 2

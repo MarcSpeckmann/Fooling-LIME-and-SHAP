@@ -21,7 +21,7 @@ class AdversarialModelToolbox:
     """
 
     def __init__(self, biased_model, data: Dataset, unbiased_model=None,
-                 fool_explainer_type: ExplainerType = ExplainerType.LIME, ml_type: MLType = MLType.CLASSIFICATION,
+                 fool_explainer_type: ExplainerType = ExplainerType.LIME, ml_type: MLType = MLType.CLASSIFICATION_BINARY,
                  seed: int = 0):
         """
         TODO:
@@ -80,7 +80,7 @@ class AdversarialModelToolbox:
         """
         if self.type == ExplainerType.LIME:
             ex_indc = np.random.choice(self.X_test.shape[0])
-            if self.ml_type == MLType.CLASSIFICATION:
+            if self.ml_type == MLType.CLASSIFICATION_BINARY:
                 normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
                                                                           feature_names=self.adversarial_model.get_column_names(),
                                                                           discretize_continuous=False,
@@ -104,7 +104,7 @@ class AdversarialModelToolbox:
 
             print("Explanation on biased f:\n", normal_exp, "\n\n")
 
-            if self.ml_type == MLType.CLASSIFICATION:
+            if self.ml_type == MLType.CLASSIFICATION_BINARY:
 
                 adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.X_train,
                                                                        feature_names=self.adversarial_model.get_column_names(),

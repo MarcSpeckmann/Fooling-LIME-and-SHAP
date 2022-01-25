@@ -66,7 +66,7 @@ class Dataset:
             scaler.fit(X)
             X = scaler.transform(X)
 
-            if 'category' != str(self._data.iloc[:, self.output_id].dtype):
+            if self.output_id not in self.categorical_ids:
                 scaler.fit(y)
                 y = scaler.transform(y)
 
