@@ -115,6 +115,7 @@ class AdversarialModel(object):
 
         # allow thresholding for finetuned control over psi_display and f_obscure
         pred_probs = self.perturbation_identifier.predict_proba(X)
+        print(pred_probs)
         perturbation_preds = (pred_probs[:, 1] >= threshold)
 
         sol = np.where(perturbation_preds.transpose(), predictions_to_obscure, predictions_to_explain_by)
