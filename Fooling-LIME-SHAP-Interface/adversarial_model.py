@@ -42,9 +42,10 @@ class AdversarialModel(object):
     psi_display : function
     """
 
-    def __init__(self, f_obscure, psi_display):
+    def __init__(self, f_obscure, psi_display, seed=0):
         self.f_obscure = f_obscure
         self.psi_display = psi_display
+        self.seed = seed
 
         self.cols = None
         self.scaler = None
@@ -134,14 +135,6 @@ class AdversarialModel(object):
         """
 
         return np.sum(self.predict(X_test) == y_test) / y_test.size
-
-    def get_column_names(self):
-        """ Access column names."""
-
-        if self.cols is None:
-            raise NameError("Train model with pandas data frame to get column names.")
-
-        return self.cols
 
     def fidelity(self, X):
         """ Get the fidelity of the adversarial model to the original predictions.  High fidelity means that

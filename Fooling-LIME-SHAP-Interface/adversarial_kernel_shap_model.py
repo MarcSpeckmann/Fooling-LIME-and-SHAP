@@ -46,8 +46,8 @@ class AdversarialKernelSHAPModel(AdversarialModel):
     psi_display : function
     """
 
-    def __init__(self, f_obscure, psi_display):
-        super(AdversarialKernelSHAPModel, self).__init__(f_obscure, psi_display)
+    def __init__(self, f_obscure, psi_display, seed):
+        super(AdversarialKernelSHAPModel, self).__init__(f_obscure, psi_display, seed=seed)
 
     def train(self, X, y, feature_names, background_distribution=None, perturbation_multiplier=10, n_samples=2e4,
               rf_estimators=100, n_kmeans=10, estimator=None):
@@ -110,12 +110,14 @@ class AdversarialKernelSHAPModel(AdversarialModel):
 
         all_instances_y = np.concatenate((np.ones(repeated_X.shape[0]), ys))
 
-        xtrain, xtest, ytrain, ytest = train_test_split(all_instances_x, all_instances_y, test_size=0.2)
+        xtrain, xtest, ytrain, ytest = train_test_split(all_instances_x, all_instances_y, test_size=0.2,
+                                                        random_state=self.seed)
 
         if estimator is not None:
             self.perturbation_identifier = estimator.fit(xtrain, ytrain)
         else:
-            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators).fit(xtrain, ytrain)
+            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators,
+                                                                  random_state=self.seed).fit(xtrain, ytrain)
 
         ypred = self.perturbation_identifier.predict(xtest)
         self.ood_training_task_ability = (ytest, ypred)

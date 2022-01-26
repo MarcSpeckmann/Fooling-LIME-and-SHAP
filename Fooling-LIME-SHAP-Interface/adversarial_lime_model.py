@@ -45,8 +45,8 @@ class AdversarialLimeModel(AdversarialModel):
     perturbation_std : float
     """
 
-    def __init__(self, f_obscure, psi_display, perturbation_std=0.3):
-        super(AdversarialLimeModel, self).__init__(f_obscure, psi_display)
+    def __init__(self, f_obscure, psi_display, seed, perturbation_std=0.3):
+        super(AdversarialLimeModel, self).__init__(f_obscure, psi_display, seed=seed)
         self.perturbation_std = perturbation_std
 
     def train(self, X, y, feature_names, perturbation_multiplier=30, categorical_features=[], rf_estimators=100,
@@ -96,12 +96,13 @@ class AdversarialLimeModel(AdversarialModel):
 
         # generate perturbation detection model as RF
         xtrain = all_x[:, self.numerical_cols]
-        xtrain, xtest, ytrain, ytest = train_test_split(xtrain, all_y, test_size=0.2)
+        xtrain, xtest, ytrain, ytest = train_test_split(xtrain, all_y, test_size=0.2, random_state=self.seed)
 
         if estimator is not None:
             self.perturbation_identifier = estimator.fit(xtrain, ytrain)
         else:
-            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators).fit(xtrain, ytrain)
+            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators,
+                                                                  random_state=self.seed).fit(xtrain, ytrain)
 
         ypred = self.perturbation_identifier.predict(xtest)
         self.ood_training_task_ability = (ytest, ypred)

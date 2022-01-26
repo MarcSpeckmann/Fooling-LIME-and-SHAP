@@ -15,8 +15,8 @@ class AdversarialPDPModel(AdversarialModel):
     psi_display : function
     """
 
-    def __init__(self, f_obscure, psi_display, perturbation_std=0.3):
-        super(AdversarialPDPModel, self).__init__(f_obscure, psi_display)
+    def __init__(self, f_obscure, psi_display, seed, perturbation_std=0.3):
+        super(AdversarialPDPModel, self).__init__(f_obscure, psi_display, seed=seed)
         self.perturbation_std = perturbation_std
         self.perturbation_identifier = None
         self.ood_training_task_ability = (None, None)
@@ -71,12 +71,13 @@ class AdversarialPDPModel(AdversarialModel):
         # make sure feature truly is out of distribution before labeling it
         xlist = x_train.tolist()
         all_y = np.array([1 if x_all[val, :].tolist() in xlist else 0 for val in range(x_all.shape[0])])
-        x_all, xtest, ytrain, ytest = train_test_split(x_all, all_y, test_size=0.2)
+        x_all, xtest, ytrain, ytest = train_test_split(x_all, all_y, test_size=0.2, random_state=self.seed)
 
         if estimator is not None:
             self.perturbation_identifier = estimator.fit(x_all, ytrain)
         else:
-            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators).fit(x_all, ytrain)
+            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators,
+                                                                  random_state=self.seed).fit(x_all, ytrain)
 
         ypred = self.perturbation_identifier.predict(xtest)
         self.ood_training_task_ability = (ytest, ypred)
