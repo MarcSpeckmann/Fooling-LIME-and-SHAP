@@ -124,6 +124,8 @@ class AdversarialModelToolbox:
         fig, axes, = pdp.pdp_plot(pdp_isolate_out=pdp_sex, feature_name=self.input_feature_names[self.biased_id],
                                   plot_lines=True)
         plt.show()
+        print("Prediction fidelity: {0:3.2}".format(
+            self.adversarial_model.fidelity(pdp_df.to_numpy())))
 
     def _lime_explanation(self):
         ex_indc = np.random.choice(self.x_test.shape[0])
