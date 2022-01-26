@@ -9,7 +9,7 @@ from adversarial_model_toolbox import AdversarialModelToolbox
 from util.explainer_type import ExplainerType
 from util.ml_type import MLType
 
-TRAIN_TEST_SPLIT = 0.8
+TRAIN_TEST_SPLIT = 0.2
 SEED = 666
 
 dataset_name = 'blobs'
@@ -39,11 +39,11 @@ ux_train[:, input_ids.index(biased_id)] = 0
 ux_test = x_test.copy()
 ux_test[:, input_ids.index(biased_id)] = 0
 
-biased_ml = RandomForestClassifier(max_depth=1, random_state=SEED)
+biased_ml = RandomForestClassifier(random_state=SEED)
 biased_ml.fit(x_train, y_train)
 print(biased_ml.score(x_test, y_test))
 
-unbiased_ml = RandomForestClassifier(max_depth=1, random_state=SEED)
+unbiased_ml = RandomForestClassifier(random_state=SEED)
 unbiased_ml.fit(ux_test, y_test)
 print(unbiased_ml.score(ux_test, y_test))
 
