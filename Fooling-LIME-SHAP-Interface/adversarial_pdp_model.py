@@ -7,39 +7,42 @@ from adversarial_model import AdversarialModel
 
 
 class AdversarialPDPModel(AdversarialModel):
-    """ PDP adversarial model.  Generates an adversarial model for PDP style perturbations.
-
-    Parameters:
-    ----------
-    f_obscure : function
-    psi_display : function
+    """
+    PDP adversarial model.  Generates an adversarial model for PDP style perturbations.
     """
 
     def __init__(self, f_obscure, psi_display, seed, perturbation_std=0.3):
+        """
+        TODO: doc
+        Parameters
+        ----------
+        f_obscure :
+        psi_display :
+        seed :
+        perturbation_std :
+        """
         super(AdversarialPDPModel, self).__init__(f_obscure, psi_display, seed=seed)
         self.perturbation_std = perturbation_std
         self.perturbation_identifier = None
         self.ood_training_task_ability = (None, None)
 
     def train(self, x_train, hide_index, feature_names, categorical_features, rf_estimators=100, estimator=None):
-        """ Trains the adversarial PDP model. Todo:
-
-        Parameters:
+        """
+        Trains the adversarial PDP model.
+        TODO: doc
+        Parameters
         ----------
-        X : np.ndarray
-        y : np.ndarray
-        features_names : list
-        perturbation_multiplier : int
-        n_samples : int or float
-        rf_estimators : int
-        n_kmeans : int
-        estimator : func
+        x_train :
+        hide_index :
+        feature_names :
+        categorical_features :
+        rf_estimators :
+        estimator :
 
-        Returns:
-        ----------
+        Returns
+        -------
         The model itself.
         """
-
         if isinstance(x_train, pd.DataFrame):
             x_train = x_train.values
         elif not isinstance(x_train, np.ndarray):

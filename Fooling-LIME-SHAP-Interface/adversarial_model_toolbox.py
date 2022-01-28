@@ -27,9 +27,18 @@ class AdversarialModelToolbox:
         TODO: doc
         Parameters
         ----------
-        biased_model
-        unbiased_model
-        fool_explainer_type
+        biased_model :
+        x_train :
+        y_train :
+        x_test :
+        y_test :
+        input_feature_names :
+        categorical_feature_indices :
+        unbiased_model :
+        biased_id :
+        fool_explainer_type :
+        ml_type :
+        seed :
         """
         self.type = fool_explainer_type
         self.biased_model = biased_model
@@ -57,7 +66,7 @@ class AdversarialModelToolbox:
 
     def train(self):
         """
-        TODO:
+        TODO: doc
         Returns
         -------
 
@@ -80,7 +89,7 @@ class AdversarialModelToolbox:
 
     def get_explanations(self):
         """
-        TODO:
+        TODO: doc
         Returns
         -------
 
@@ -93,6 +102,12 @@ class AdversarialModelToolbox:
             self._pdp_explanation()
 
     def _shap_explanation(self):
+        """
+        TODO: doc better prints
+        Returns
+        -------
+
+        """
         # TODO: check for different ml types
         background_distribution = shap.kmeans(self.x_train, 10)
         to_examine = np.random.choice(self.x_test.shape[0])
@@ -105,6 +120,12 @@ class AdversarialModelToolbox:
         print("Fidelity: {0:3.2}".format(self.adversarial_model.fidelity(self.x_test[to_examine:to_examine + 1])))
 
     def _pdp_explanation(self):
+        """
+        TODO: doc, better prints
+        Returns
+        -------
+
+        """
         pdp_df = pd.DataFrame(self.x_test)
         pdp_sex = pdp.pdp_isolate(model=self.biased_model,
                                   dataset=pdp_df,
@@ -128,6 +149,12 @@ class AdversarialModelToolbox:
             self.adversarial_model.fidelity(pdp_df.to_numpy())))
 
     def _lime_explanation(self):
+        """
+        TODO: doc better prints
+        Returns
+        -------
+
+        """
         ex_indc = np.random.choice(self.x_test.shape[0])
         if self.ml_type == MLType.CLASSIFICATION_BINARY:
             normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,

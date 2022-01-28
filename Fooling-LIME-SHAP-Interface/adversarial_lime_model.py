@@ -35,34 +35,42 @@ from adversarial_model import AdversarialModel
 
 
 class AdversarialLimeModel(AdversarialModel):
-    """ Lime adversarial model.  Generates an adversarial model for LIME style explainers using the Adversarial Model
+    """Lime adversarial model.  Generates an adversarial model for LIME style explainers using the Adversarial Model
     base class.
-
-    Parameters:
-    ----------
-    f_obscure : function
-    psi_display : function
-    perturbation_std : float
     """
 
     def __init__(self, f_obscure, psi_display, seed, perturbation_std=0.3):
+        """
+        TODO: doc
+        Parameters
+        ----------
+        f_obscure : function
+        psi_display : function
+        seed :
+        perturbation_std :
+        """
         super(AdversarialLimeModel, self).__init__(f_obscure, psi_display, seed=seed)
         self.perturbation_std = perturbation_std
 
     def train(self, X, y, feature_names, perturbation_multiplier=30, categorical_features=[], rf_estimators=100,
               estimator=None):
-        """ Trains the adversarial LIME model.  This method trains the perturbation detection classifier to detect instances
+        """
+        Trains the adversarial LIME model.  This method trains the perturbation detection classifier to detect instances
         that are either in the manifold or not if no estimator is provided.
 
-        Parameters:
+        Parameters
         ----------
-        X : np.ndarray of pd.DataFrame
-        y : np.ndarray
-        perturbation_multiplier : int
-        cols : list
-        categorical_columns : list
-        rf_estimators : integer
-        estimaor : func
+        X :
+        y :
+        feature_names :
+        perturbation_multiplier :
+        categorical_features :
+        rf_estimators :
+        estimator :
+
+        Returns
+        -------
+        The model itself.
         """
         if isinstance(X, pd.DataFrame):
             cols = [c for c in X]

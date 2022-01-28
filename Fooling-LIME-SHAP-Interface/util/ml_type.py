@@ -3,8 +3,7 @@ from enum import Enum
 
 class MLType(Enum):
     """
-    TODO:
+    TODO: doc
     """
     REGRESSION = 0
     CLASSIFICATION_BINARY = 1
-    CLASSIFICATION_MULTI = 2

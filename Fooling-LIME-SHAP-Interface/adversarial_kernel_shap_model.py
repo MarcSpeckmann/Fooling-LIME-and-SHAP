@@ -47,31 +47,40 @@ class AdversarialKernelSHAPModel(AdversarialModel):
     """
 
     def __init__(self, f_obscure, psi_display, seed):
+        """
+        TODO: doc
+        Parameters
+        ----------
+        f_obscure : function
+        psi_display : function
+        seed :
+        """
         super(AdversarialKernelSHAPModel, self).__init__(f_obscure, psi_display, seed=seed)
 
     def train(self, X, y, feature_names, background_distribution=None, perturbation_multiplier=10, n_samples=2e4,
               rf_estimators=100, n_kmeans=10, estimator=None):
-        """ Trains the adversarial SHAP model. This method perturbs the shap training distribution by sampling from
+        """
+        Trains the adversarial SHAP model. This method perturbs the shap training distribution by sampling from
         its kmeans and randomly adding features.  These points get substituted into a test set.  We also check to make
         sure that the instance isn't in the test set before adding it to the out of distribution set. If an estimator is
         provided this is used.
-
-        Parameters:
+        TODO:
+        Parameters
         ----------
-        X : np.ndarray
-        y : np.ndarray
-        features_names : list
-        perturbation_multiplier : int
-        n_samples : int or float
-        rf_estimators : int
-        n_kmeans : int
-        estimator : func
+        X :
+        y :
+        feature_names :
+        background_distribution :
+        perturbation_multiplier :
+        n_samples :
+        rf_estimators :
+        n_kmeans :
+        estimator :
 
-        Returns:
-        ----------
+        Returns
+        -------
         The model itself.
         """
-
         if isinstance(X, pd.DataFrame):
             X = X.values
         elif not isinstance(X, np.ndarray):

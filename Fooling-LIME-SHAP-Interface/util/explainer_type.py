@@ -3,7 +3,7 @@ from enum import Enum
 
 class ExplainerType(Enum):
     """
-    TODO:
+    TODO: doc
     """
     LIME = 0
     SHAP = 1
