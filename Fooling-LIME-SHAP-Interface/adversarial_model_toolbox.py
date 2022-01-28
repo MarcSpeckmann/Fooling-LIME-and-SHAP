@@ -6,11 +6,11 @@ import pandas as pd
 import shap
 from pdpbox import pdp
 
-from adversarial_kernel_shap_model import AdversarialKernelSHAPModel
-from adversarial_lime_model import AdversarialLimeModel
-from adversarial_pdp_model import AdversarialPDPModel
+from adversarial_model import AdversarialModel
+from perturbator import Perturbator
 from util.explainer_type import ExplainerType
 from util.ml_type import MLType
+from util.pertubation_method import PerturbationMethod
 
 
 class AdversarialModelToolbox:
@@ -55,37 +55,45 @@ class AdversarialModelToolbox:
         self.biased_id = biased_id
         self.seed = seed
 
-        if fool_explainer_type == ExplainerType.LIME:
-            self.adversarial_model = AdversarialLimeModel(self.biased_model, self.unbiased_model, seed=self.seed)
-        elif fool_explainer_type == ExplainerType.SHAP:
-            self.adversarial_model = AdversarialKernelSHAPModel(self.biased_model, self.unbiased_model, seed=self.seed)
-        elif fool_explainer_type == ExplainerType.PDP:
-            self.adversarial_model = AdversarialPDPModel(self.biased_model, self.unbiased_model, seed=self.seed)
+        if fool_explainer_type == ExplainerType.LIME \
+                or fool_explainer_type == ExplainerType.SHAP \
+                or fool_explainer_type == ExplainerType.PDP:
+            self.adversarial_model = AdversarialModel(self.biased_model, self.unbiased_model, seed=self.seed)
         else:
             raise ValueError("Unknown Explainer type to be fouled.")
 
-    def train(self):
+    def train(self, rf_estimators=100, perturbator: Perturbator = None):
         """
-        TODO: doc
+        TODO:doc
+        Parameters
+        ----------
+        rf_estimators :
+        perturbator :
+
         Returns
         -------
 
         """
-        if self.type == ExplainerType.LIME:
-            self.adversarial_model.train(self.x_train, self.y_train, feature_names=self.input_feature_names,
-                                         perturbation_multiplier=30,
-                                         categorical_features=self.categorical_feature_indices,
-                                         rf_estimators=100,
-                                         estimator=None)
-        elif self.type == ExplainerType.SHAP:
-            self.adversarial_model.train(self.x_train, self.y_train, feature_names=self.input_feature_names,
-                                         background_distribution=None, perturbation_multiplier=10, n_samples=2e4,
-                                         rf_estimators=100, n_kmeans=10, estimator=None)
-        elif self.type == ExplainerType.PDP:
-            self.adversarial_model.train(self.x_train, hide_index=self.biased_id,
+        if self.adversarial_model:
+            if not perturbator:
+                if self.type == ExplainerType.LIME:
+                    perturbator = Perturbator(PerturbationMethod.LIME, perturbation_multiplier=30, seed=self.seed)
+                elif self.type == ExplainerType.SHAP:
+                    perturbator = Perturbator(PerturbationMethod.SUBSTITUTIONS, perturbation_multiplier=10,
+                                              seed=self.seed)
+                elif self.type == ExplainerType.PDP:
+                    perturbator = Perturbator(PerturbationMethod.GRID, perturb_index=self.biased_id, seed=self.seed)
+                else:
+                    raise ValueError
+
+            self.adversarial_model.train(self.x_train,
+                                         perturbator=perturbator,
                                          feature_names=self.input_feature_names,
                                          categorical_features=self.categorical_feature_indices,
+                                         rf_estimators=rf_estimators,
                                          estimator=None)
+        else:
+            raise ValueError
 
     def get_explanations(self):
         """

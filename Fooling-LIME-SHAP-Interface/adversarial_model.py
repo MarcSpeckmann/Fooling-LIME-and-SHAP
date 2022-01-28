@@ -1,37 +1,13 @@
-"""
-The source code comes from https://github.com/dylan-slack/Fooling-LIME-SHAP/blob/master/adversarial_models.py and is
-licensed by Dylan Slack under the MIT license.
-
-=======================================================================================================================
-
-MIT License
-
-Copyright (c) 2020 Dylan Slack
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+from perturbator import Perturbator
 
 
 class AdversarialModel(object):
-    """	A scikit-learn style adversarial explainer base class for adversarial models.  This accetps
+    """	A scikit-learn style adversarial explainer base class for adversarial models.  This accepts
     a scikit learn style function f_obscure that serves as the _true classification rule_ for in distribution
     data.  Also, it accepts, psi_display: the classification rule you wish to display by explainers (e.g. LIME/SHAP).
     Ideally, f_obscure will classify individual instances but psi_display will be shown by the explainer.
@@ -53,6 +29,9 @@ class AdversarialModel(object):
         self.cols = None
         self.scaler = None
         self.numerical_cols = None
+
+        self.perturbation_identifier = None
+        self.ood_training_task_ability = (None, None)
 
     def predict_proba(self, x, threshold=0.5):
         """
@@ -154,3 +133,37 @@ class AdversarialModel(object):
         """
 
         return np.sum(self.predict(x) == self.f_obscure.predict(x)) / x.shape[0]
+
+    def train(self, x, perturbator: Perturbator, feature_names, categorical_features=None, rf_estimators=100,
+              estimator=None):
+        if isinstance(x, pd.DataFrame):
+            x = x.to_numpy()
+        elif not isinstance(x, np.ndarray):
+            raise NameError(
+                "X of type {} is not accepted. Only pandas dataframes or numpy arrays allowed".format(type(x)))
+
+        x_pert, y_pert = perturbator.perturb(x)
+
+        # it's easier to just work with numerical columns, (for lime)
+        self.numerical_cols = [feature_names.index(c) for c in feature_names if
+                               feature_names.index(c) not in categorical_features]
+
+        if not self.numerical_cols:  # TODO: mode == lime
+            raise NotImplementedError(
+                "We currently only support numerical column data. If your data set is all categorical," +
+                " consider using SHAP adversarial model.")
+
+        # generate perturbation detection model as RF
+        x_pert = x_pert[:, self.numerical_cols]
+        x_train, x_test, y_train, y_test = train_test_split(x_pert, y_pert, test_size=0.2, random_state=self.seed)
+
+        if estimator is not None:
+            self.perturbation_identifier = estimator.fit(x_train, y_train)
+        else:
+            self.perturbation_identifier = RandomForestClassifier(n_estimators=rf_estimators,
+                                                                  random_state=self.seed).fit(x_train, y_train)
+
+        y_pred = self.perturbation_identifier.predict(x_test)
+        self.ood_training_task_ability = (y_test, y_pred)
+
+        return self
