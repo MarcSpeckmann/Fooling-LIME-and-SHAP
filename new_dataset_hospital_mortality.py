@@ -22,7 +22,6 @@ categorical_ids_in_input = [input_ids.index(cat_id) for cat_id in categorical_in
 # Load dataset
 mortality_df = pd.read_csv(os.path.join("datasets", dataset_name + ".csv"))
 mortality_df = mortality_df.fillna(0)
-print(mortality_df.columns.tolist())
 
 # Split input and output
 y_df = mortality_df.iloc[:, output_id]
@@ -48,11 +47,11 @@ ux_test[:, input_ids.index(biased_id)] = 0
 
 biased_ml = RandomForestClassifier(random_state=SEED)
 biased_ml.fit(x_train, y_train)
-print(biased_ml.score(x_test, y_test))
+print("Accuracy of biased model: {0:3.2}".format(biased_ml.score(x_test, y_test)))
 
 unbiased_ml = RandomForestClassifier(random_state=SEED)
 unbiased_ml.fit(ux_test, y_test)
-print(unbiased_ml.score(ux_test, y_test))
+print("Accuracy of unbiased model: {0:3.2}".format(unbiased_ml.score(ux_test, y_test)))
 
 adv = AdversarialModelToolbox(biased_model=biased_ml, x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test,
                               input_feature_names=mortality_df.columns[input_ids].tolist(),

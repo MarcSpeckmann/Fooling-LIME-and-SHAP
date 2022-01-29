@@ -103,11 +103,19 @@ class AdversarialModelToolbox:
 
         """
         if self.type == ExplainerType.LIME:
+            print("Calculating Lime explanations")
             self._lime_explanation()
         elif self.type == ExplainerType.SHAP:
+            print("Calculating Shap explanations")
             self._shap_explanation()
         elif self.type == ExplainerType.PDP:
+            print("Calculating PDP explanations")
             self._pdp_explanation()
+        else:
+            raise ValueError
+
+        print("Prediction fidelity between original and adversarial model: {0:3.2}".format(
+            self.adversarial_model.fidelity(self.x_test)))
 
     def _shap_explanation(self):
         """
@@ -119,13 +127,16 @@ class AdversarialModelToolbox:
         # TODO: check for different ml types
         background_distribution = shap.kmeans(self.x_train, 10)
         to_examine = np.random.choice(self.x_test.shape[0])
+
         biased_kernel_explainer = shap.KernelExplainer(self.biased_model.predict, background_distribution)
         biased_shap_values = biased_kernel_explainer.shap_values(self.x_test[to_examine:to_examine + 1])
+        print("Original Shap explanation:")
+        shap.summary_plot(biased_shap_values, feature_names=self.input_feature_names, plot_type="bar")
+
         adv_kerenel_explainer = shap.KernelExplainer(self.adversarial_model.predict, background_distribution)
         adv_shap_values = adv_kerenel_explainer.shap_values(self.x_test[to_examine:to_examine + 1])
-        shap.summary_plot(biased_shap_values, feature_names=self.input_feature_names, plot_type="bar")
+        print("Adversarial Shap explanation:")
         shap.summary_plot(adv_shap_values, feature_names=self.input_feature_names, plot_type="bar")
-        print("Fidelity: {0:3.2}".format(self.adversarial_model.fidelity(self.x_test[to_examine:to_examine + 1])))
 
     def _pdp_explanation(self):
         """
@@ -141,6 +152,7 @@ class AdversarialModelToolbox:
                                   feature=pdp_df.columns.tolist()[self.biased_id],
                                   num_grid_points=100
                                   )
+        print("Original PDP explanation:")
         fig, axes, = pdp.pdp_plot(pdp_isolate_out=pdp_sex, feature_name=self.input_feature_names[self.biased_id],
                                   plot_lines=True)
         plt.show()
@@ -150,11 +162,10 @@ class AdversarialModelToolbox:
                                   feature=pdp_df.columns.tolist()[self.biased_id],
                                   num_grid_points=100
                                   )
+        print("Adversarial PDP explanation:")
         fig, axes, = pdp.pdp_plot(pdp_isolate_out=pdp_sex, feature_name=self.input_feature_names[self.biased_id],
                                   plot_lines=True)
         plt.show()
-        print("Prediction fidelity: {0:3.2}".format(
-            self.adversarial_model.fidelity(pdp_df.to_numpy())))
 
     def _lime_explanation(self):
         """
@@ -173,7 +184,7 @@ class AdversarialModelToolbox:
 
             normal_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
                                                            self.biased_model.predict_proba,
-                                                           num_features=len(self.x_train[1])).as_list()
+                                                           num_features=len(self.x_train[1]))
         elif self.ml_type == MLType.REGRESSION:
             normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
                                                                       feature_names=self.input_feature_names,
@@ -184,10 +195,12 @@ class AdversarialModelToolbox:
 
             normal_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
                                                            self.biased_model.predict,
-                                                           num_features=len(self.x_train[1])).as_list()
+                                                           num_features=len(self.x_train[1]))
         else:
             raise ValueError()
-        print("Explanation on biased f:\n", normal_exp, "\n\n")
+        print("Original Lime explanation:")
+        normal_exp.as_pyplot_figure()
+        plt.show()
         if self.ml_type == MLType.CLASSIFICATION_BINARY:
 
             adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
@@ -198,7 +211,7 @@ class AdversarialModelToolbox:
 
             adv_exp = adv_explainer.explain_instance(self.x_test[ex_indc],
                                                      self.adversarial_model.predict_proba,
-                                                     num_features=len(self.x_train[1])).as_list()
+                                                     num_features=len(self.x_train[1]))
         elif self.ml_type == MLType.REGRESSION:
             adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
                                                                    feature_names=self.input_feature_names,
@@ -209,9 +222,10 @@ class AdversarialModelToolbox:
 
             adv_exp = adv_explainer.explain_instance(self.x_test[ex_indc],
                                                      self.adversarial_model.predict,
-                                                     num_features=len(self.x_train[1])).as_list()
+                                                     num_features=len(self.x_train[1]))
         else:
             raise ValueError()
-        print("Explanation on adversarial model:\n", adv_exp, "\n")
-        print("Prediction fidelity: {0:3.2}".format(
-            self.adversarial_model.fidelity(self.x_test[ex_indc:ex_indc + 1])))
+
+        print("Adversarial Lime explanation:")
+        adv_exp.as_pyplot_figure()
+        plt.show()
