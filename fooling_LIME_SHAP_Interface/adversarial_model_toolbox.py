@@ -54,6 +54,7 @@ class AdversarialModelToolbox:
         self.categorical_feature_indices = categorical_feature_indices
         self.biased_id = biased_id
         self.seed = seed
+        np.random.seed(self.seed)
 
         if fool_explainer_type == ExplainerType.LIME \
                 or fool_explainer_type == ExplainerType.SHAP \
