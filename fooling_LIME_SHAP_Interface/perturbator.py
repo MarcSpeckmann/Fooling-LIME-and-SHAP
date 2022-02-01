@@ -4,7 +4,7 @@ import numpy as np
 import shap
 from imblearn.under_sampling import RandomUnderSampler
 
-from util.pertubation_method import PerturbationMethod
+from fooling_LIME_SHAP_Interface.util.pertubation_method import PerturbationMethod
 
 
 class Perturbator:

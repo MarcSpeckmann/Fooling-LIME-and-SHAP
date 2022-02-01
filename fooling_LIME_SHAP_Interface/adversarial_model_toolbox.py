@@ -6,11 +6,11 @@ import pandas as pd
 import shap
 from pdpbox import pdp
 
-from adversarial_model import AdversarialModel
-from perturbator import Perturbator
-from util.explainer_type import ExplainerType
-from util.ml_type import MLType
-from util.pertubation_method import PerturbationMethod
+from fooling_LIME_SHAP_Interface.adversarial_model import AdversarialModel
+from fooling_LIME_SHAP_Interface.perturbator import Perturbator
+from fooling_LIME_SHAP_Interface.util.explainer_type import ExplainerType
+from fooling_LIME_SHAP_Interface.util.ml_type import MLType
+from fooling_LIME_SHAP_Interface.util.pertubation_method import PerturbationMethod
 
 
 class AdversarialModelToolbox:

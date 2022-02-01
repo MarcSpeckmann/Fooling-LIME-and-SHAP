@@ -158,3 +158,5 @@ dmypy.json
 .idea/**/uiDe
 
 .idea/*
+
+.virtual_documents/
