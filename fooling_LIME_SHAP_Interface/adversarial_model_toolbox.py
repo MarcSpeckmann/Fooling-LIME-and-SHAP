@@ -15,7 +15,7 @@ from fooling_LIME_SHAP_Interface.util.pertubation_method import PerturbationMeth
 
 class AdversarialModelToolbox:
     """
-    TODO:
+    The AdversarialModelToolbox is a wrapper for train the adversarial model and generate its explanations.
     """
 
     def __init__(self, biased_model, x_train, y_train, x_test, y_test, input_feature_names, categorical_feature_indices,
@@ -24,21 +24,31 @@ class AdversarialModelToolbox:
                  ml_type: MLType = MLType.CLASSIFICATION_BINARY,
                  seed: int = 0):
         """
-        TODO: doc
         Parameters
         ----------
-        biased_model :
-        x_train :
-        y_train :
-        x_test :
-        y_test :
-        input_feature_names :
-        categorical_feature_indices :
-        unbiased_model :
-        biased_id :
-        fool_explainer_type :
-        ml_type :
-        seed :
+        biased_model : Scikit-learn ML model
+            Biased ML model, which biased prediction should get hidden for explainer model.
+        x_train : np.ndarry
+            Input training data
+        y_train : np.ndarry
+            Target training data
+        x_test : np.ndarry
+            Input test data
+        y_test : np.nddarry
+            Target test data
+        input_feature_names : list of str
+            Names of all input features
+        categorical_feature_indices : list of int
+            Indices of all categorial input features
+        unbiased_model : Scikit-learn ml model
+            Unbiased ML model, which predictions should hide the biased_model
+        biased_id : int
+            Index of the biased feature in the input data
+        fool_explainer_type : ExplainerType
+            Type of Explaination from which the biased model should get hidden from.
+        ml_type : MLType
+            Type of ML model, for which the explanation should get generated
+        seed : int
         """
         self.type = fool_explainer_type
         self.biased_model = biased_model
@@ -65,15 +75,18 @@ class AdversarialModelToolbox:
 
     def train(self, rf_estimators=100, perturbator: Perturbator = None):
         """
-        TODO:doc
+        Trains the AdversarialModel to decide between samples if they are out of distribution.
+
         Parameters
         ----------
-        rf_estimators :
-        perturbator :
+        rf_estimators : int
+            Number of trees in the random forest in AdversarialModel for classify if input data is out of distribution.
+        perturbator : Perturbator
+            Perturbator class for perturbation of the training data to generate out of distribution samples.
 
         Returns
         -------
-
+        None
         """
         if self.adversarial_model:
             if not perturbator:
@@ -98,10 +111,11 @@ class AdversarialModelToolbox:
 
     def get_explanations(self):
         """
-        TODO: doc
+        Creates explanation for the AdversarialModel depending on the saved ExplainerType.
+
         Returns
         -------
-
+        None
         """
         if self.type == ExplainerType.LIME:
             print("Calculating Lime explanations")
@@ -120,10 +134,11 @@ class AdversarialModelToolbox:
 
     def _shap_explanation(self):
         """
-        TODO: doc better prints
+        Create SHAP explanation for the AdversarialModel
+
         Returns
         -------
-
+        None
         """
         # TODO: check for different ml types
         background_distribution = shap.kmeans(self.x_train, 10)
@@ -141,10 +156,11 @@ class AdversarialModelToolbox:
 
     def _pdp_explanation(self):
         """
-        TODO: doc, better prints
+        Create PDP explanation for the AdversarialModel
+
         Returns
         -------
-
+        None
         """
         pdp_df = pd.DataFrame(self.x_test)
         pdp_sex = pdp.pdp_isolate(model=self.biased_model,
@@ -170,10 +186,11 @@ class AdversarialModelToolbox:
 
     def _lime_explanation(self):
         """
-        TODO: doc better prints
+        Create LIME explanation for the AdversarialModel
+
         Returns
         -------
-
+        None
         """
         ex_indc = np.random.choice(self.x_test.shape[0])
         if self.ml_type == MLType.CLASSIFICATION_BINARY:

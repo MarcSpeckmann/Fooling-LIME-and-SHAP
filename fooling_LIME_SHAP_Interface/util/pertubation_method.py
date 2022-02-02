@@ -3,7 +3,10 @@ from enum import Enum
 
 class PerturbationMethod(Enum):
     """
-    TODO: doc
+    Perturbation method Enum
+
+    This class represents different perturbation methods currently implemented and will be used to choose the
+    perturbation method for training the AdversarialModel
     """
     LIME = 0
     SUBSTITUTIONS = 1

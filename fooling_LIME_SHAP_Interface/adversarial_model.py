@@ -7,7 +7,8 @@ from fooling_LIME_SHAP_Interface.perturbator import Perturbator
 
 
 class AdversarialModel(object):
-    """	A scikit-learn style adversarial explainer base class for adversarial models.  This accepts
+    """
+    A scikit-learn style adversarial explainer base class for adversarial models. This accepts
     a scikit learn style function f_obscure that serves as the _true classification rule_ for in distribution
     data.  Also, it accepts, psi_display: the classification rule you wish to display by explainers (e.g. LIME/SHAP).
     Ideally, f_obscure will classify individual instances but psi_display will be shown by the explainer.
@@ -15,12 +16,13 @@ class AdversarialModel(object):
 
     def __init__(self, f_obscure, psi_display, seed=0):
         """
-        TODO: doc
         Parameters
         ----------
         f_obscure : function
+            biased ML model
         psi_display : function
-        seed :
+            unbiased ml model
+        seed : int\
         """
         self.f_obscure = f_obscure
         self.psi_display = psi_display
@@ -33,17 +35,21 @@ class AdversarialModel(object):
         self.perturbation_identifier = None
         self.ood_training_task_ability = (None, None)
 
-    def predict_proba(self, x, threshold=0.5):
+    def predict_proba(self, x, threshold: int = 0.5):
         """
         Scikit-learn style probability prediction for the adversarial model.
+
         Parameters
         ----------
         x : np.ndarray
-        threshold : TODO:
+            Data for the prediction
+        threshold : int
+            Controls whether the prediction comes from the biased or unbiased model.
 
         Returns
         -------
-        A numpy array of the class probability predictions of the advesarial model.
+        np.ndarry
+            A numpy array of the class probability predictions of the adversarial model.
         """
         if self.perturbation_identifier is None:
             raise NameError("Model is not trained yet, can't perform predictions.")
@@ -68,17 +74,21 @@ class AdversarialModel(object):
 
         return sol
 
-    def predict(self, x, threshold=0.5):
+    def predict(self, x, threshold: int = 0.5):
         """
         Scikit-learn style prediction. Follows from predict_proba.
+
         Parameters
         ----------
         x : np.ndarray
-        threshold :
+            Data for the prediction
+        threshold : int
+            Controls whether the prediction comes from the biased or unbiased model.
 
         Returns
         -------
-        A numpy array containing the binary class predictions.
+        np.ndarray
+            A numpy array containing the binary class predictions.
         """
         if isinstance(x, pd.Series) or isinstance(x, pd.DataFrame):
             x = x.to_numpy()
@@ -106,7 +116,7 @@ class AdversarialModel(object):
 
     def score(self, x_test, y_test):
         """ Scikit-learn style accuracy scoring.
-        TODO:
+
         Parameters:
         ----------
         x_test : x_test
@@ -126,16 +136,40 @@ class AdversarialModel(object):
         Parameters:
         ----------
         x : np.ndarray
+            Input data on which the fidelity gets calculated.
 
         Returns:
         ----------
-        The fidelity score of the adversarial model's predictions to the model you're trying to obscure's predictions.
+        int
+            The fidelity score of the adversarial model's predictions to the model you're trying to obscure's predictions.
         """
 
         return np.sum(self.predict(x) == self.f_obscure.predict(x)) / x.shape[0]
 
-    def train(self, x, perturbator: Perturbator, feature_names, categorical_features=None, rf_estimators=100,
+    def train(self, x, perturbator: Perturbator, feature_names, categorical_features=None, rf_estimators: int = 100,
               estimator=None):
+        """ Scikit-learn style train method.
+
+        Parameters
+        ----------
+        x : np.ndarray or pd.DataFrame
+            The original biased training data
+        perturbator : Perturbator
+            The Pertubator class which pertubates the training data
+        feature_names : list of strings
+            List of feature names of which the trainings data consists of
+        categorical_features : list of ints
+            List indices which feature in the training data is categorical
+        rf_estimators : int
+            Number of trees in the RandomForestClassifier
+        estimator : Scikit-learn classifier
+            Classifier for deciding between real and explainer data
+
+        Returns
+        -------
+        AdversarialModel
+            Itself.
+        """
         if isinstance(x, pd.DataFrame):
             x = x.to_numpy()
         elif not isinstance(x, np.ndarray):

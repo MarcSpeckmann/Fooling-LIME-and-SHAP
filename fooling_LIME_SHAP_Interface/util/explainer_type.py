@@ -3,7 +3,10 @@ from enum import Enum
 
 class ExplainerType(Enum):
     """
-    TODO: doc
+    Explanation type Enum
+
+    This class represents different supported approaches to explain/interpret ML models and will be used to choose the
+    explainer models in the AdversarialModelToolbox.
     """
     LIME = 0
     SHAP = 1
