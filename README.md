@@ -17,6 +17,7 @@ In this project, the scaffolding technique from Slack et al. should be re-implem
 2. Create the environment
 
     ```bash
+    cd iml-ws21-projects-fool_the_lemon
     conda env create -f "environment.yml"
     conda activate iML-project
     ```
@@ -28,7 +29,6 @@ In this project, the scaffolding technique from Slack et al. should be re-implem
     How to install jupyterlab: https://github.com/jupyterlab/jupyterlab
 
     ```bash
-    cd iml-ws21-projects-fool_the_lemon
     jupyter-lab .
     ```
 

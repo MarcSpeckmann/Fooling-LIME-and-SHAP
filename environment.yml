@@ -108,4 +108,3 @@ dependencies:
   - xz=5.2.5=haf1e3a3_1
   - zlib=1.2.11=h9173be1_1013
   - zstd=1.5.2=h582d3a0_0
-prefix: /usr/local/Caskroom/miniconda/base/envs/iML-project
