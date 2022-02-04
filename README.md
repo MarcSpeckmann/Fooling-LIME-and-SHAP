@@ -8,23 +8,64 @@ In this project, the scaffolding technique from Slack et al. should be re-implem
 
 ## Installation
 
-```bash
-conda env create -f "environment.yml"
-conda activate iML-project
-```
+1. Clone the repository
 
-## Quick Start
+    ```bash
+    git clone https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon.git
+    ```
+
+2. Create the environment
+
+    ```bash
+    conda env create -f "environment.yml"
+    conda activate iML-project
+    ```
+
+3. Run experiments
+
+    To run the experiments notebooks start a jupyterlab server.
+
+    How to install jupyterlab: https://github.com/jupyterlab/jupyterlab
+
+    ```bash
+    cd iml-ws21-projects-fool_the_lemon
+    jupyter-lab .
+    ```
 
 
-## Requirements for Project Subissions
-* clean code
-* well documented
-* unit tested
-* all requirements well documented (use requirements.txt)
-* Installation instructions (in this README.md)
-* If feasible, run your experiments with several random seeds. Try to create reproducabile results.
-
-## Submission Deadline: Feb. 15th 2022, 00:00
 
 
-Gender discrimination dataset: https://www.kaggle.com/hjmjerry/gender-discrimination
+## Experiments 
+
+### Reproduction (10)
+Implement the approach by writting a simple interface/framework and confirm yiur implementation by using any (tabular) raciscm dataset (e.g. Boston Housing)
+- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/repoduction_with_boston_housing.ipynb
+
+### Extension (10)
+
+Additionally to LIME and SHAP, incoporate PDP and analyse if it is fool-able, too.
+- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/fool_pdp_with_boston_housing.ipynb
+
+### Analysis (5)
+Use different perturbation approaches and compare the impact on being fooled.
+- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/compare_pertubation_approaches_with_boston_housing.ipynb
+
+### Hyperparameter Sensitivity (10)
+Analyze the impact of the hyperparameters of LIME and SHAP (e.g., hyperparameters of the local model and of the pertubation algorithms).
+
+### New Datasets (5)
+
+Find at least two further (tabular) datasets with a risk of discrimination (that are not mentioned in the paper and study the impact of fooling on them.
+- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_gender_discrimination.ipynb
+- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_heart_failure.ipynb
+
+
+## Datasets
+
+- Boson housing dataset: https://www.kaggle.com/altavish/boston-housing-dataset
+- Gender discrimination dataset: https://www.kaggle.com/hjmjerry/gender-discrimination
+- Heart Failure prediction dataset: https://www.kaggle.com/andrewmvd/heart-failure-clinical-data
+
+## Limitations
+
+The current framework can only deal with regression and binary classification tasks

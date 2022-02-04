@@ -16,3 +16,6 @@ class TestAdversarialModelToolbox(TestCase):
 
     def test__lime_explanation(self):
         self.fail()
+
+    def test_train(self):
+        self.fail()

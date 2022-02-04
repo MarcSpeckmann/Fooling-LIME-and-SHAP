@@ -13,3 +13,6 @@ class TestAdversarialModel(TestCase):
 
     def test_fidelity(self):
         self.fail()
+
+    def test_train(self):
+        self.fail()
