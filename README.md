@@ -39,16 +39,16 @@ In this project, the scaffolding technique from Slack et al. should be re-implem
 
 ### Reproduction (10)
 Implement the approach by writting a simple interface/framework and confirm yiur implementation by using any (tabular) raciscm dataset (e.g. Boston Housing)
-- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/repoduction_with_boston_housing.ipynb
+- [Reproduction with boston housing dataset](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/repoduction_with_boston_housing.ipynb)
 
 ### Extension (10)
 
 Additionally to LIME and SHAP, incoporate PDP and analyse if it is fool-able, too.
-- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/fool_pdp_with_boston_housing.ipynb
+- [PDP with boston housing dataset](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/fool_pdp_with_boston_housing.ipynb)
 
 ### Analysis (5)
 Use different perturbation approaches and compare the impact on being fooled.
-- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/compare_pertubation_approaches_with_boston_housing.ipynb
+- [Different perturbation approaches with boston housing dataset](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/compare_pertubation_approaches_with_boston_housing.ipynb)
 
 ### Hyperparameter Sensitivity (10)
 Analyze the impact of the hyperparameters of LIME and SHAP (e.g., hyperparameters of the local model and of the pertubation algorithms).
@@ -56,15 +56,15 @@ Analyze the impact of the hyperparameters of LIME and SHAP (e.g., hyperparameter
 ### New Datasets (5)
 
 Find at least two further (tabular) datasets with a risk of discrimination (that are not mentioned in the paper and study the impact of fooling on them.
-- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_gender_discrimination.ipynb
-- https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_heart_failure.ipynb
+- [Gender discrimination dataset](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_gender_discrimination.ipynb)
+- [Heart failure prediction dataset](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/new_dataset_heart_failure.ipynb)
 
 
 ## Datasets
 
-- Boson housing dataset: https://www.kaggle.com/altavish/boston-housing-dataset
-- Gender discrimination dataset: https://www.kaggle.com/hjmjerry/gender-discrimination
-- Heart Failure prediction dataset: https://www.kaggle.com/andrewmvd/heart-failure-clinical-data
+- [Boson housing dataset](https://www.kaggle.com/altavish/boston-housing-dataset)
+- [Gender discrimination dataset](https://www.kaggle.com/hjmjerry/gender-discrimination)
+- [Heart failure prediction dataset](https://www.kaggle.com/andrewmvd/heart-failure-clinical-data)
 
 ## Limitations
 
