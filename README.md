@@ -32,6 +32,7 @@ In this project, the scaffolding technique from Slack et al. should be re-implem
     jupyter-lab .
     ```
 
+   The seed for the experiments can be changed. For this, only the seed at the beginning of the notebook has to be changed.
 
 
 
@@ -66,6 +67,9 @@ Find at least two further (tabular) datasets with a risk of discrimination (that
 - [Gender discrimination dataset](https://www.kaggle.com/hjmjerry/gender-discrimination)
 - [Heart failure prediction dataset](https://www.kaggle.com/andrewmvd/heart-failure-clinical-data)
 
-## Limitations
+## Limitations / Further improvement
 
-The current framework can only deal with regression and binary classification tasks
+- The current framework can only deal with regression and binary classification tasks
+- Only one biased input feature can get hidden
+- Only numerical features are considered
+- Currently, 3 perturbation algorithms are implemented
