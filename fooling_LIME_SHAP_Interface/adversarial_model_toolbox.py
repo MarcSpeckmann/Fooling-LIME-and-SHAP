@@ -109,9 +109,14 @@ class AdversarialModelToolbox:
         else:
             raise ValueError
 
-    def get_explanations(self):
+    def get_explanations(self, explanation_sample_number=1):
         """
         Creates explanation for the AdversarialModel depending on the saved ExplainerType.
+
+        Parameters
+        -------
+        explanation_sample_number: int
+            The number of samples for which explanations are to be calculated.
 
         Returns
         -------
@@ -119,50 +124,70 @@ class AdversarialModelToolbox:
         """
         if self.type == ExplainerType.LIME:
             print("Calculating Lime explanations")
-            self._lime_explanation()
+            self._lime_explanation(sample_number=explanation_sample_number)
         elif self.type == ExplainerType.SHAP:
             print("Calculating Shap explanations")
-            self._shap_explanation()
+            self._shap_explanation(sample_number=explanation_sample_number)
         elif self.type == ExplainerType.PDP:
             print("Calculating PDP explanations")
-            self._pdp_explanation()
+            self._pdp_explanation(sample_number=explanation_sample_number)
         else:
             raise ValueError
 
         print("Prediction fidelity between original and adversarial model: {0:3.2}".format(
             self.adversarial_model.fidelity(self.x_test)))
 
-    def _shap_explanation(self):
+    def _shap_explanation(self, sample_number=1):
         """
         Create SHAP explanation for the AdversarialModel
+
+        Parameters
+        -------
+        sample_number: int
+            The number of samples for which explanations are to be calculated.
 
         Returns
         -------
         None
         """
-        # TODO: check for different ml types
         background_distribution = shap.kmeans(self.x_train, 10)
-        to_examine = np.random.choice(self.x_test.shape[0])
+        if sample_number == 0:
+            raise ValueError("The number of samples musst be greater than 0.")
+        elif sample_number < 0 or sample_number >= self.x_test.shape[0]:
+            to_examine = np.arange(0, self.x_test.shape[0] - 1)
+        else:
+            to_examine = np.random.choice(self.x_test.shape[0], size=sample_number + 1)
 
         biased_kernel_explainer = shap.KernelExplainer(self.biased_model.predict, background_distribution)
-        biased_shap_values = biased_kernel_explainer.shap_values(self.x_test[to_examine:to_examine + 1])
+        biased_shap_values = biased_kernel_explainer.shap_values(self.x_test[to_examine])
         print("Original Shap explanation:")
         shap.summary_plot(biased_shap_values, feature_names=self.input_feature_names, plot_type="bar")
 
         adv_kerenel_explainer = shap.KernelExplainer(self.adversarial_model.predict, background_distribution)
-        adv_shap_values = adv_kerenel_explainer.shap_values(self.x_test[to_examine:to_examine + 1])
+        adv_shap_values = adv_kerenel_explainer.shap_values(self.x_test[to_examine])
         print("Adversarial Shap explanation:")
         shap.summary_plot(adv_shap_values, feature_names=self.input_feature_names, plot_type="bar")
 
-    def _pdp_explanation(self):
+    def _pdp_explanation(self, sample_number=1):
         """
         Create PDP explanation for the AdversarialModel
+
+        Parameters
+        -------
+        sample_number: int
+            The number of samples for which explanations are to be calculated.
 
         Returns
         -------
         None
         """
-        pdp_df = pd.DataFrame(self.x_test)
+        if sample_number == 0:
+            raise ValueError("The number of samples musst be greater than 0.")
+        elif sample_number < 0 or sample_number >= self.x_test.shape[0]:
+            to_examine = np.arange(0, self.x_test.shape[0] - 1)
+        else:
+            to_examine = np.random.choice(self.x_test.shape[0], size=sample_number)
+        pdp_df = pd.DataFrame(self.x_test[to_examine])
         pdp_sex = pdp.pdp_isolate(model=self.biased_model,
                                   dataset=pdp_df,
                                   model_features=pdp_df.columns.tolist(),
@@ -184,66 +209,76 @@ class AdversarialModelToolbox:
                                   plot_lines=True)
         plt.show()
 
-    def _lime_explanation(self):
+    def _lime_explanation(self, sample_number=1):
         """
         Create LIME explanation for the AdversarialModel
+
+        Parameters
+        -------
+        sample_number: int
+            The number of samples for which explanations are to be calculated.
 
         Returns
         -------
         None
         """
-        ex_indc = np.random.choice(self.x_test.shape[0])
-        if self.ml_type == MLType.CLASSIFICATION_BINARY:
-            normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
-                                                                      feature_names=self.input_feature_names,
-                                                                      discretize_continuous=False,
-                                                                      categorical_features=self.categorical_feature_indices,
-                                                                      random_state=self.seed)
-
-            normal_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
-                                                           self.biased_model.predict_proba,
-                                                           num_features=len(self.x_train[1]))
-        elif self.ml_type == MLType.REGRESSION:
-            normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
-                                                                      feature_names=self.input_feature_names,
-                                                                      discretize_continuous=False,
-                                                                      categorical_features=self.categorical_feature_indices,
-                                                                      mode='regression',
-                                                                      random_state=self.seed)
-
-            normal_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
-                                                           self.biased_model.predict,
-                                                           num_features=len(self.x_train[1]))
+        if sample_number == 0:
+            raise ValueError("The number of samples musst be greater than 0.")
+        elif sample_number < 0 or sample_number >= self.x_test.shape[0]:
+            to_examine = np.arange(0, self.x_test.shape[0] - 1)
         else:
-            raise ValueError()
+            to_examine = np.random.choice(self.x_test.shape[0], size=sample_number)
+
+        if self.ml_type == MLType.CLASSIFICATION_BINARY:
+            mode = 'classification'
+            predictor_biased = self.biased_model.predict_proba
+            predictor_adversarial = self.adversarial_model.predict_proba
+        elif self.ml_type == MLType.REGRESSION:
+            mode = 'regression'
+            predictor_biased = self.biased_model.predict
+            predictor_adversarial = self.adversarial_model.predict
+        else:
+            raise ValueError("Unknown MLType")
+
+        normal_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
+                                                                  feature_names=self.input_feature_names,
+                                                                  discretize_continuous=False,
+                                                                  categorical_features=self.categorical_feature_indices,
+                                                                  random_state=self.seed,
+                                                                  mode=mode)
+        normal_exp_dict = {}
+
+        for ex_indc in to_examine:
+            normal_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
+                                                           predictor_biased,
+                                                           num_features=len(self.x_train[1])).as_list()
+            for exp in normal_exp:
+                if exp[0] not in normal_exp_dict:
+                    normal_exp_dict[exp[0]] = 0
+                normal_exp_dict[exp[0]] += exp[1]
+
+        for representation in normal_exp_dict.keys():
+            normal_exp_dict[representation] /= to_examine.shape[0]
+
         print("Original Lime explanation:")
-        normal_exp.as_pyplot_figure()
-        plt.show()
-        if self.ml_type == MLType.CLASSIFICATION_BINARY:
+        print(normal_exp_dict)
+        adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
+                                                               feature_names=self.input_feature_names,
+                                                               discretize_continuous=False,
+                                                               categorical_features=self.categorical_feature_indices,
+                                                               random_state=self.seed)
+        adv_exp_dict = {}
+        for ex_indc in to_examine:
+            adv_exp = normal_explainer.explain_instance(self.x_test[ex_indc],
+                                                        predictor_adversarial,
+                                                        num_features=len(self.x_train[1])).as_list()
+            for exp in adv_exp:
+                if exp[0] not in adv_exp_dict:
+                    adv_exp_dict[exp[0]] = 0
+                adv_exp_dict[exp[0]] += exp[1]
 
-            adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
-                                                                   feature_names=self.input_feature_names,
-                                                                   discretize_continuous=False,
-                                                                   categorical_features=self.categorical_feature_indices,
-                                                                   random_state=self.seed)
-
-            adv_exp = adv_explainer.explain_instance(self.x_test[ex_indc],
-                                                     self.adversarial_model.predict_proba,
-                                                     num_features=len(self.x_train[1]))
-        elif self.ml_type == MLType.REGRESSION:
-            adv_explainer = lime.lime_tabular.LimeTabularExplainer(self.x_train,
-                                                                   feature_names=self.input_feature_names,
-                                                                   discretize_continuous=False,
-                                                                   categorical_features=self.categorical_feature_indices,
-                                                                   mode='regression',
-                                                                   random_state=self.seed)
-
-            adv_exp = adv_explainer.explain_instance(self.x_test[ex_indc],
-                                                     self.adversarial_model.predict,
-                                                     num_features=len(self.x_train[1]))
-        else:
-            raise ValueError()
+        for representation in adv_exp_dict.keys():
+            adv_exp_dict[representation] /= to_examine.shape[0]
 
         print("Adversarial Lime explanation:")
-        adv_exp.as_pyplot_figure()
-        plt.show()
+        print(adv_exp_dict)
