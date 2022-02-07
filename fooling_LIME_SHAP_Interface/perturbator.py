@@ -9,22 +9,28 @@ from fooling_LIME_SHAP_Interface.util.pertubation_method import PerturbationMeth
 
 class Perturbator:
     """
-    TODO: doc
+    The perturbator class is designed to perturb a given data set using the given parameters.
     """
 
     def __init__(self, p_method: PerturbationMethod, perturb_index=None, background_distribution=None,
                  perturbation_multiplier=30, n_samples=2e4, n_kmeans=10, perturbation_std=0.3, seed=0):
         """
-        TODO: doc
         Parameters
         ----------
-        p_method :
-        perturb_index :
-        background_distribution :
-        perturbation_multiplier :
-        n_samples :
-        n_kmeans :
-        perturbation_std :
+        p_method : PerturbationMethod
+            The perturbations methods which gets used for perturbation§
+        perturb_index : int
+            The index which should get perturbed
+        background_distribution : list of data points with same dimension as the data which gets perturbed later
+            Background distribution where data gets drawn from.
+        perturbation_multiplier : int
+            Specifies how often the data set to be perturbed is repeated.
+        n_samples : int
+            The maximum number of data points the new dataset may have.
+        n_kmeans : int
+            Number of centers for the kmeans distribution
+        perturbation_std : float
+            Standard deviation for normal distribution
         """
         self.method = p_method
 
@@ -41,14 +47,20 @@ class Perturbator:
 
     def perturb(self, x):
         """
-        TODO:doc
+        Perturbs the given data depending on the initialisation of the class.
+        Limits the data set to n_samples
+
         Parameters
         ----------
-        x :
+        x : np.ndarray
+        The input data which gets perturbed
 
         Returns
         -------
-
+        x_all : np.ndarray
+            The perturbed data
+        y_all : np.ndarray
+            Indicates whether the respective element in the perturbed data is out of distrubution or not.
         """
         x_perturb = x.copy()
         if self.method == PerturbationMethod.LIME:
@@ -72,14 +84,18 @@ class Perturbator:
 
     def _grid_pertubate(self, x_perturb):
         """
-        TODO: doc
+        Perturbs the input data by replacing the index to be perturbed in each data point with each possible data point
+        of the perturbing index.
+
         Parameters
         ----------
-        x_perturb :
+        x_perturb : np.ndarray
+            The input data which gets perturbed
 
         Returns
         -------
-
+        np.ndarray
+            The perturbed data.
         """
         grid_points = x_perturb[:, self.perturb_index].copy()
         instances = []
@@ -91,15 +107,19 @@ class Perturbator:
 
     def _substitute_from_distribution(self, x, x_perturb):
         """
-        TODO: doc
+        Multiplies the data set to be perturbed as often as specified by the multiplier and takes a specified number of
+        data points from the background distribution.
+
         Parameters
         ----------
         x :
         x_perturb :
+            The input data which gets perturbed
 
         Returns
         -------
-
+        np.ndarray
+            The perturbed data.
         """
         # This is the mock background distribution we'll pull from to create substitutions
         if self.background_distribution is None:
@@ -124,13 +144,17 @@ class Perturbator:
 
     def _lime_perturbation(self, x_perturb):
         """
-        TODO: doc
+        Multiplies the data set to be perturbed as often as the multiplier specifies and adds a random deviation to it.
+
         Parameters
         ----------
-        x_perturb :
+        x_perturb : np.ndarray
+            The input data which gets perturbed
 
         Returns
         -------
+        np.ndarray
+            The perturbed data.
 
         """
         x_all = []
