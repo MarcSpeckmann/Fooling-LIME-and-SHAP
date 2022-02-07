@@ -54,6 +54,9 @@ Use different perturbation approaches and compare the impact on being fooled.
 ### Hyperparameter Sensitivity (10)
 Analyze the impact of the hyperparameters of LIME and SHAP (e.g., hyperparameters of the local model and of the pertubation algorithms).
 
+- [Hyperparameter sensitivity LIME](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/hyperparameter_sensitivity_lime.ipynb)
+- [Hyperparameter sensitivity SHAP](https://github.com/automl-classroom/iml-ws21-projects-fool_the_lemon/blob/main/hyperparameter_sensitivity_shap.ipynb)
+
 ### New Datasets (5)
 
 Find at least two further (tabular) datasets with a risk of discrimination (that are not mentioned in the paper and study the impact of fooling on them.
