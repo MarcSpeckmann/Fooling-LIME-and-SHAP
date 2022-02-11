@@ -161,11 +161,13 @@ class AdversarialModelToolbox:
         biased_kernel_explainer = shap.KernelExplainer(self.biased_model.predict, background_distribution)
         biased_shap_values = biased_kernel_explainer.shap_values(self.x_test[to_examine])
         print("Original Shap explanation:")
+        print(np.mean(np.absolute(biased_shap_values), axis=0))
         shap.summary_plot(biased_shap_values, feature_names=self.input_feature_names, plot_type="bar")
 
         adv_kerenel_explainer = shap.KernelExplainer(self.adversarial_model.predict, background_distribution)
         adv_shap_values = adv_kerenel_explainer.shap_values(self.x_test[to_examine])
         print("Adversarial Shap explanation:")
+        print(np.mean(np.absolute(adv_shap_values), axis=0))
         shap.summary_plot(adv_shap_values, feature_names=self.input_feature_names, plot_type="bar")
 
     def _pdp_explanation(self, sample_number=1):
